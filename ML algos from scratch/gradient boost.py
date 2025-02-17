@@ -28,14 +28,14 @@ class GradientBoost():
         self.numb_of_features_splitting = numb_of_features_splitting
         self.bootstrap_sample_size = bootstrap_sample_size
 
-    def base_tree(self, X_set, Y_set):
-        tree=dt.DecisionTree(max_depth=2)
+    def _new_tree(self, X_set, Y_set):
+        tree = dt.DecisionTree(max_depth=2)
         tree.train(X_set, Y_set)
         return tree
 
     def _Loss(self, labels, predictions):
         n = len(labels)
-        squareErrors=[] #[(y-fx)^2 for y,fx in labels, predictions]????
+        squareErrors = [] #[(y-fx)^2 for y,fx in labels, predictions]????
         for i in range(0,n - 1):
             squareErrors.append((labels[i] - predictions[i])**2)
         return squareErrors #1/n*sum(
@@ -45,26 +45,11 @@ class GradientBoost():
         denominator = np.gradient(tree.predict(X_set))
         return -numerator/denominator ##dont need to transpose bc np.gradient same shape as input
 
-    #now call base tree on (base x set, pseudoresiduals)?
+    def _GBTree(self, X_set, Y_set):
+        gbTree = self._new_tree(X_set, Y_set)
+        for i in range(self.n_base_learner):#define and implement better stopping criteria
+            residuals = self.pseudoResiduals(X_set, Y_set, gbTree)
+            newTree = self._new_tree(X_set, residuals)
+            # find minimum gamma for loss(predictions, basetree.predict(base x set) + gamma * newtree1(base x set)
+            # update some overall GBTree = basetree + gamma*newtree1
 
-    #find minimum gamma for loss(predictions, basetree.predict(base x set) + gamma * newtree1(base x set)
-    #update some overall GBTree = basetree + gamma*newtree1
-
-    #define and implement stopping criteria
-
-# def diffLoss(actual, predicted):
-#     lossVec = []
-#     for i in range(len(actual)):
-#         lossVec.append(actual[i] - predicted[i])
-#     return lossVec
-#
-#
-# def predFunc(X_set):
-#     return X_set
-#
-#
-# ###test res
-# x = [1, 24, 32]
-# y = [216, 46, 632]
-#
-# print(pseudoResiduals(x, y, diffLoss, predFunc))
