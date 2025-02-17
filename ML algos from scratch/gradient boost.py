@@ -47,9 +47,18 @@ class GradientBoost():
 
     def _GBTree(self, X_set, Y_set):
         gbTree = self._new_tree(X_set, Y_set)
+        ###gamma vector of len(n_base_learner) -> gamVec[0] = 1
+        ###learner vector of len(n_base_learner) or maybe list is fine -> append base tree
         for i in range(self.n_base_learner):#define and implement better stopping criteria
             residuals = self.pseudoResiduals(X_set, Y_set, gbTree)
             newTree = self._new_tree(X_set, residuals)
+            ###learner list.append new tree
             # find minimum gamma for loss(predictions, basetree.predict(base x set) + gamma * newtree1(base x set)
-            # update some overall GBTree = basetree + gamma*newtree1
+                #gamma vector[i] = gamma
 
+    ###predict(X, _GBTree?) ->
+    ###### construct predictor function as linear combination of gamma vector * learner vector elements
+    ###### return predFunc(x)
+
+
+    
