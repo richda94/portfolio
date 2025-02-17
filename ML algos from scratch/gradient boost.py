@@ -55,6 +55,8 @@ class GradientBoost():
             ###learner list.append new tree
             # find minimum gamma for loss(predictions, basetree.predict(base x set) + gamma * newtree1(base x set)
                 #gamma vector[i] = gamma
+            ##somehow combine gbtree with new learner and gamma ... maybe split this function up 
+
 
     ###predict(X, _GBTree?) ->
     ###### construct predictor function as linear combination of gamma vector * learner vector elements
