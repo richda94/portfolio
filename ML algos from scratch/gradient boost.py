@@ -1,6 +1,6 @@
 import numpy as np
 import DecisionTree as dt
-
+from scipy import optimize
 '''
 inputs:
     {(x_i, y_i)} i: 1 -> n
@@ -40,27 +40,39 @@ class GradientBoost():
             squareErrors.append((labels[i] - predictions[i])**2)
         return squareErrors #1/n*sum(
 
-    def pseudoResiduals(self, X_set, Y_set, tree: dt.DecisionTree) -> tuple:
-        numerator = np.gradient(self._Loss(Y_set,  tree.predict(X_set)))
-        denominator = np.gradient(tree.predict(X_set))
+    def pseudoResiduals(self, Y_set, pred_set) -> np.array:
+        numerator = np.gradient(self._Loss(Y_set,  pred_set))
+        denominator = np.gradient(pred_set)
         return -numerator/denominator ##dont need to transpose bc np.gradient same shape as input
+
+    def objective_function(self, gamma, labels, inputs, f, h):
+        gamma = float(gamma)  # Ensure gamma is a scalar
+        loss = self._Loss(labels, f.predict(inputs) + gamma * h.predict(inputs))
+        return loss
 
     def _GBTree(self, X_set, Y_set):
         gbTree = self._new_tree(X_set, Y_set)
-        ###gamma vector of len(n_base_learner) -> gamVec[0] = 1
-        ###learner vector of len(n_base_learner) or maybe list is fine -> append base tree
-        for i in range(self.n_base_learner):#define and implement better stopping criteria
-            residuals = self.pseudoResiduals(X_set, Y_set, gbTree)
+        gammaVec = [1]
+        learners = [gbTree]
+
+        for i in range(1,self.n_base_learner):#define and implement better stopping criteria
+            pred_set = gbTree.predict(X_set)
+            residuals = self.pseudoResiduals(Y_set, pred_set)
             newTree = self._new_tree(X_set, residuals)
-            ###learner list.append new tree
-            # find minimum gamma for loss(predictions, basetree.predict(base x set) + gamma * newtree1(base x set)
-                #gamma vector[i] = gamma
-            ##somehow combine gbtree with new learner and gamma ... maybe split this function up 
+            learners.append(newTree)
+            #newLearned = newTree.predict(X_set)
+            gammaVec.append(optimize.minimize(self.objective_function, x0=np.asarray([0.01]), bounds=[(0, 1)],
+                                              args=(Y_set, X_set, gbTree, newTree)).x[0])
+            ##somehow combine gbtree with new learner and gamma ... maybe split this function up
+            gbTree = ?
 
 
-    ###predict(X, _GBTree?) ->
+    ###predict(X) ->
     ###### construct predictor function as linear combination of gamma vector * learner vector elements
     ###### return predFunc(x)
 
 
     
+
+
+
